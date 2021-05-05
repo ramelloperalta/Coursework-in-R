@@ -1,0 +1,250 @@
+---
+title: 'CIND 123 - Data Analytics: Basic Methods'
+author: 
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+<center> <h1> Assignment 1 (10%) </h1> </center>
+<center>  <h3> [Ramello Peralta] </h2> </center>
+<center> <h3> [CIND123 DHD 500519802] </h2> </center>
+---
+## Instructions 
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. Review this website for more details on using R Markdown <http://rmarkdown.rstudio.com>.
+
+Use RStudio for this assignment. Complete the assignment by inserting your R code wherever you see the string "#INSERT YOUR ANSWER HERE".
+
+When you click the **Knit** button, a document (PDF, Word, or HTML format) will be generated that includes both the assignment content as well as the output of any embedded R code chunks.
+
+Submit **both**  the rmd and generated output files. Failing to submit both files will be subject to mark deduction.
+
+## Sample Question and Solution
+
+Use `seq()` to create the vector $(1,2,3,\ldots,10)$.
+
+```{r}
+seq(1,10)
+```
+
+## Question 1
+
+a) Use the `seq()` function to create the vector $(1, 7, 13, \ldots, 61)$. Note that each term in this sequence is of the form 
+$1 + 6n$ where $n = 0, \ldots, 10$.
+
+```{r}
+seq(1,61,6)
+```
+
+b) Use `rep()` to create the vector $(2,3,4,\dots,2,3,4, \dots,2,3,4)$ in which the sequence $(2,3,4)$ is repeated 5 times.
+
+```{r}
+rep(c(2,3,4), 5)
+```
+
+c) To convert factor to number, would it be correct to use the following commands? Explain your answer.
+
+`factorVar <- factor(c(1, 6, 5.4, 3.2));as.numeric(factorVar)`
+
+```{r}
+#The above code returns only the factor levels as numeric values, not the original vector. This may lead to confusion or inaccuracy in further data analysis.
+#Instead, if it is necessary to convert the original vector values of factorVar from factor to number: 
+#as.numeric(levels(factorVar))[factorVar]
+#or
+#as.numeric(as.character(factorVar))
+```
+
+d) A comma-separated values file `dataset.csv` consists of missing values represented by question marks (`?`) and exclamation mark (`!`). How can you read this type of files in R?
+
+```{r}
+#Use read.csv function and specify the na.strings arguments, ie:
+#dataset <- read.csv("~working directory/dataset.csv", na.strings = c("?", "!", "NA"))
+```
+
+\newpage
+## Question 2
+
+a) Compute: $$\sum_{n=10}^{100} n^3$$
+
+```{r}
+sum(seq(10, 100, 1)^3)
+```
+
+b) Compute: $$\sum_{n=1}^{10}\left(\frac{2^{n}}{n^2} + \frac{n^{4}}{4^{n}}\right)$$
+
+```{r}
+b <- seq(1,10,1)
+sum((2^b/b^2)+(b^4/4^b))
+```
+
+c) Compute: $$\sum_{n=0}^{10} \frac{1}{(n+1)!}$$ 
+
+```{r}
+c <- seq(0,10,1)
+sum((1/factorial(c+1)))
+```
+
+d) Compute: $$\prod_{n=3}^{33} \left(3n + \frac{3}{\sqrt[3]{n}}\right)$$
+
+```{r}
+d <- seq(3,33,1)
+prod((3*d) + (3/d^(1/3)))
+
+#in a function just to try it
+sum.d <- function(x){
+  prod((3*x) + (3/x^(1/3)))
+}
+sum.d(3:33)
+```
+
+e) Explain the output of this R-command:
+`c(0:5)[NA]`
+
+```{r}
+#c(0:5) outputs a 6 element vector from 0 to 5. [NA] with square brackets indexes the vector in 
+#position "NA". R cannot know whether any index can be satisfied because of the nature of the NA value
+#therefore all indexes are returned with NA
+```
+
+f) What is the difference between is.vector() and is.numeric() functions?
+
+```{r}
+#is.vector() will return TRUE if the object is a vector data structure.
+#is.numeric() will return TRUE if the object is numeric data type.
+```
+
+g) List at least three advantages and three disadvantages of using `RShiny` package?
+```{r}
+#Advantages of RShiny
+#- reactive programming model; more reactivity with user input and customization with real-time visualization
+#- you do not need to be an expert in back-end web development to use Shiny as long as you are familiar with R language
+#- Free, open-source outside of server hosting costs
+
+#Disadvantages
+#- hard to pass a RShiny app to support team devs for bigger apps as they are usually unfamiliar with R
+#- development time+costs can be on the higher end
+#- steep learning curve if unfamiliar with R
+```
+
+\newpage
+## Question 3
+`iris` dataset gives the measurements in centimeters of the variables sepal length, sepal width, petal length and petal width, respectively, for 50 flowers from each of 3 species of iris. The species are Iris setosa, versicolor, and virginica.
+
+Install the `iris` dataset on your computer using the command `install.packages("datasets")`. Then, load the `datasets` package into your session using the following command.
+```{r}
+#install.packages("datasets")
+library(datasets)
+```
+
+a) Display the first six rows of the `iris` data set.
+
+```{r}
+head(iris)
+```
+
+b) Compute the average of the first four variables (Sepal.Length, Sepal.Width, Petal.Length and Petal.Width) using `sapply()` function.
+
+Hint: You might need to consider removing the `NA` values, otherwise the average will not be computed.
+
+```{r}
+listFirst4 <- list(SepalLength = iris$Sepal.Length, SepalWidth = iris$Sepal.Width, PetalLength = iris$Petal.Length, PetalWidth = iris$Petal.Width)
+sapply(listFirst4, mean, na.rm = T)
+```
+
+c) Show how to use R to replace the missing values in this dataset with plausible ones.
+
+```{r}
+#We can impute the mean of non-NA values into the missing values for each numeric variable:
+
+iris2 <- iris
+iris2$Sepal.Length[130:132] <- NA
+iris2$Sepal.Width[130] <- NA
+iris2$Petal.Length[22:24] <- NA
+iris2$Petal.Width[c(66, 22)] <- NA #inserting missing values into iris2
+
+for(c in 1:4){
+  showme1 <- iris2[,c][is.na(iris2[,c])] <- (mean(iris2[,c][!is.na(iris2[,c])]))
+  showme <- mean(iris2[,c], na.rm = T)
+} #inserting mean of non-NA values into the NA values of each variable
+showme1
+showme
+#because iris$Species is a is a factor type we cannot simply impute missing values the same way 
+#but we may be able to inference species based on how closely each variable matches the average of each species 
+
+```
+
+d) Compute the standard deviation for only the first and the third variables (Sepal.Length and Petal.Length)
+
+```{r}
+sd(iris$Sepal.Length, na.rm = T)
+sd(iris$Petal.Length, na.rm = T)
+```
+
+e) Construct a boxplot for `Sepal.Width` variable, then display the values of all the outliers. Explain how these outliers have been calculated.
+
+```{r}
+
+boxplot(iris$Sepal.Width)$out
+
+#For univariate data, outliers are determined above 1.5*IQR of 3rd Qu. and below 1.5IQR of 1st Qu.
+
+#summary(iris$Sepal.Width) to find 1st and 3rd Qu.
+thirdQuartile <- summary(iris$Sepal.Width)[5]
+firstQuartile <- summary(iris$Sepal.Width)[2]
+upperQLimit <- thirdQuartile + 1.5*IQR(iris$Sepal.Width)
+lowerQLimit <- firstQuartile - 1.5*IQR(iris$Sepal.Width)
+outliers <- c(iris$Sepal.Width[which(iris$Sepal.Width > upperQLimit)], iris$Sepal.Width[which(iris$Sepal.Width < lowerQLimit)])
+outliers
+
+```
+
+f) Compute the upper quartile of the `Sepal.Width` variable with two different methods.
+
+```{r}
+summary(iris$Sepal.Width)[5] # summary includes 3rd qu.
+
+quantile(iris$Sepal.Width)[4] # 75% is the 3rd qu.
+
+medianindex <- length(iris$Sepal.Width)/2
+upperquartileindex <- medianindex*1.5
+sort.int(iris$Sepal.Width)[upperquartileindex] 
+
+```
+
+g) Construct a pie chart to describe the species with 'Sepal.Length' less than 7 centimeters.
+```{r}
+#determine frequency of each < 7cm
+
+under7 <- iris[which(iris$Sepal.Length < 7),] #subset iris rows where sepal length <7
+
+frequnder7 <- c(sum(under7$Species == "setosa"), 
+                sum(under7$Species == "versicolor"),
+                sum(under7$Species == "virginica")) #frequency of each species under 7cm
+
+relativefreq <- round(c(sum(under7$Species == "setosa")/sum(frequnder7),
+                        sum(under7$Species == "versicolor")/sum(frequnder7),
+                        sum(under7$Species == "virginica")/sum(frequnder7))*100, 1)
+#relative frequency
+
+#install.packages("scales") #for the 'percent' function to convert relativefreq to percentages
+#library(scales)
+#relativefreq <- percent(relativefreq/100)
+
+species <- c("setosa", "versicolor", "virginica")
+dfsepallength <- data.frame(row.names = species, frequency = frequnder7, rfrequency = relativefreq)
+
+colors <- c("white", "blue", "pink")
+pie(dfsepallength[,1], labels = dfsepallength[,1], col = colors,
+    main = "Frequency of Sepal Length < 7cm in each species")
+legend("topleft", legend=row.names(dfsepallength), fill = colors) 
+
+pie(dfsepallength[,1], labels = dfsepallength[,2], col = colors, 
+    main = "Relative Frequency of Sepal Length < 7cm (%)")
+legend("topleft", legend=row.names(dfsepallength), fill = colors) 
+
+
+
+```
+
+END of Assignment #1.

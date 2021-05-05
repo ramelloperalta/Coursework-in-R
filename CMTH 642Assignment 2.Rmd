@@ -1,0 +1,148 @@
+---
+title: 'CMTH 642 Data Analytics: Advanced Methods'
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+<center> <h1> Assignment 2 (10%) </h1> </center>
+<center>  <h3> Ramello Peralta </h2> </center>
+<center> <h3> CMTH642 D10 500519802 </h2> </center>
+---
+
+#### 1. Read the csv file (USDA_Clean.csv) in the folder and assign it to a data frame. (3 points)
+```{r}
+df.dataframe <- read.csv("C:/Users/Ramello/Documents/CMTH642/Assignment 2/USDA_Clean.csv", sep = ",")
+```
+
+#### 2. Check the datatypes of the attributes. (3 points)
+```{r}
+attach(df.dataframe)
+str(df.dataframe)
+head(df.dataframe)
+```
+
+#### 3. Visualize the correlation among Calories, Protein, Total Fat, Carbohydrate, Sodium and Cholesterol. (7 points)
+```{r}
+library(corrplot)
+co.df <- cor(df.dataframe[,c("Calories","Protein","TotalFat","Carbohydrate","Sodium","Cholesterol")]);co.df
+corrplot(co.df, method="circle")
+```
+
+#### 4. Is the correlation between Calories and Total Fat statistically significant? Why? (7 points)
+```{r}
+cor.test(Calories,TotalFat, data=df.dataframe)
+#The p-value for calories and total fat is less than 0.05, indicating that the correlation between Calories and TotalFat is significant.
+```
+
+#### 5. Create a Linear Regression Model, using Calories as the dependent variable Protein, Total Fat, Carbohydrate, Sodium and Cholesterol as the independent variables. (7 points)
+```{r}
+model1 <- lm(Calories~Protein + TotalFat + Carbohydrate + Sodium + Cholesterol, data=df.dataframe)
+model1
+```
+
+#### 6. Write the Linear Regression Equation, using Calories as the dependent variable whereas Protein, TotalFat, Carbohydrate, Sodium and Cholesterol as the independent variables. (7 points)
+```{r}
+#y = 3.9882753 + 3.9891994(Protein) + 8.7716980(TotalFat) + 3.7432001(Carbohydrate) + 0.0003383(Sodium) + 0.0110138(Cholesterol)
+
+```
+
+#### 7. Which independent variable is the least significant? Why? (7 points)
+```{r}
+summary(model1)
+#Sodium's p value from the summary of the model is 0.122 and not significant. It also has the weakest coefficient in the table.
+
+model2 <- lm(Calories~Protein + TotalFat + Carbohydrate + Cholesterol, data=df.dataframe)
+anova(model2, model1)
+
+#the p value from the anova table of the two models shows (p = 0.1223 > 0.05), meaning the reduction in RSS is not statistically significant. Therefore sodium is not an effective addition to the model and the simpler model1 is preferred. 
+```
+
+#### 8. A new product is just produced with the following data:                                                            Protein=0.1, TotalFat=35, Carbohydrate=405, Sodium=440, Cholesterol=70, Sugar=NA, Calcium=35, Iron=NA, Potassium=35, VitaminC=10,	VitaminE=NA, VitaminD=NA.                                                                                                         Based on the model you created, what is the predicted value for Calories? (7 points)
+```{r}
+y <- 3.9882753 + 3.9891994*(0.1) + 8.7716980*(35) + 3.7432001*(405) + 0.0003383*(440) + 0.0110138*(70); y
+#Calories is predicted to be 1828.312
+```
+
+#### 9. If the Sodium amount increases from 440 to 44440 (10000% increase), how much change will occur on Calories in percent? Explain why? (7 points)
+```{r}
+#The coefficient for Sodium is 0.0003383 in the above model, therefore the projected increase on the model output will be very small, even with a large 10000% increase on the Sodium value.
+
+y <- 3.9882753 + 3.9891994*(0.1) + 8.7716980*(35) + 3.7432001*(405) + 0.0003383*(44440) + 0.0110138*(70); y
+pchange <- (y-1828.312)/y; pchange #about 0.8% increase
+```
+
+
+#### 10. A study of primary education asked elementaty school students to retell two book articles that they read earlier in the week. The first (Article 1) had no pictures, and the second (Article 2) was illustrated with pictures. An expert listened to recordings of the students retelling each article and assigned a score for certain uses of language. Higher scores are better. Here are the data for five readers in this study:
+
+#### Article 1   0.40   0.72   0.00   0.36   0.55
+
+#### Article 2   0.77   0.49   0.66   0.28   0.38
+
+
+#### A) What are $H_0$ and $H_a$ ? (5 points)
+```{r}
+#using paired t-test; comparing means
+
+#Null hypothesis; Article 1 and 2 mean scores are the same
+#Alternative hypothesis; they are not the same
+```
+
+#### B) Is this a paired or unpaired experiment? (5 points)
+```{r}
+# it is paired because the same student had two treatments (reading two different articles). ie. The sample is dependent.
+```
+
+#### C) Based on your previous answer, which nonparametric test statistic would you use to compare the medians of Article 1 and Article 2. (5 points) 
+```{r}
+# Wilcoxon ranked signed test as it is also used for paired samples.
+# in a two tailed test, the test statistic would be min(T-, T+)
+```
+
+#### D) Use a nonparametric test statistic to check if there is a statistically significant difference between the medians of Article 1 and Article 2. (5 points) 
+```{r}
+Article.1 <- c(0.40,0.72,0.00,0.36,0.55)
+Article.2 <- c(0.77,0.49,0.66,0.28,0.38)
+wilcox.test(Article.1,Article.2, paired = TRUE)
+
+```
+
+#### E) Will you accept or reject your Null Hypothesis? ($\alpha = 0.05$) Do illustrations improve how the students retell an article or not? Why? (5 points)
+```{r}
+# Because the p value 0.8125 > 0.05, we cannot reject the null hypothesis. Therefore we cannot tell from this data if illustrations improve how students retell the article. 
+```
+
+#### 11. Two companies selling toothpastes with the lable of 100 grams per tube on the package. We randomly bought eight toothpastes from each company A and B from random stores. Afterwards, we scaled them using high precision scale. Our measurements are recorded as follows:
+
+#### Company A: 97.1   101.3   107.8   101.9   97.4    104.5   99.5    95.1
+#### Company B: 103.5  105.3   106.5   107.9   102.1   105.6   109.8   97.2
+
+
+#### A) Is this a paired or unpaired experiment? (5 points)
+```{r}
+# This is an unpaired experiment; each Company had 8 independent samples
+```
+
+#### B) Based on your previous answer, which nonparametric test statistic would you use to compare the medians of Company A and Company B. (5 points) 
+```{r}
+# Wilcoxon rank sum test
+# The test statistic used in a two tailed test would be T = min(T1, T1*)
+```
+
+#### C) Use a nonparametric test statistic to check if there is a statistically significant difference between the medians of Company A and Company B. (5 points) 
+```{r}
+CompanyA <- c(97.1, 101.3, 107.8, 101.9, 97.4, 104.5, 99.5, 95.1)
+CompanyB <- c(103.5, 105.3, 106.5, 107.9, 102.1, 105.6, 109.8, 97.2)
+wilcox.test(CompanyA,CompanyB, paired = FALSE)
+
+```
+
+#### D) Will you accept or reject your Null Hypothesis? ($\alpha = 0.05$) Are packaging process similar or different based on weight measurements? Why? (5 points)
+```{r}
+#The pvalue 0.04988 < 0.05, which is very close to the border of the alpha value. Because it is a strictly lower than 0.5 bound, we are able to reject the null hypothesis and we can say that the packaging processes are not similar.
+
+```
+
+This is the end of Assignment 2
+
+Ceni Babaoglu, PhD

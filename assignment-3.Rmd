@@ -1,0 +1,178 @@
+---
+title: 'CIND 123 - Data Analytics: Basic Methods'
+author: 
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+<center> <h1> Assignment 3 (10%) </h1> </center>
+<center>  <h3> Ramello Peralta </h2> </center>
+<center> <h3> CIND123 DHD 500519802 </h2> </center>
+---
+## Instructions 
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. Review this website for more details on using R Markdown <http://rmarkdown.rstudio.com>.
+
+Use RStudio for this assignment. Complete the assignment by inserting your R code wherever you see the string "#INSERT YOUR ANSWER HERE".
+
+When you click the **Knit** button, a document (PDF, Word, or HTML format) will be generated that includes both the assignment content as well as the output of any embedded R code chunks.
+
+Submit **both**  the rmd and generated output files. Failing to submit both files will be subject to mark deduction.
+
+## Sample Question and Solution
+
+Use `seq()` to create the vector $(2,4,6,\ldots,20)$.
+
+```{r}
+#Insert your code here.
+seq(2,20,by = 2)
+```
+
+
+## Question 1
+
+Use the following commands to install the `airquality` dataset and load the `datasets` package into your session.
+```{r}
+#install.packages("datasets")
+library(datasets) 
+data(airquality)
+str(airquality)
+```
+
+
+a) Use a histogram to assess the normality of the `Ozone` variable, then explain why it does not appear normally distributed.
+```{r}
+hist(airquality$Ozone, breaks = 50)
+#This histogram is not symmetrical about the mean and has a larger right tail therefore is not normally distributed.
+```
+
+b) Create a set of boxplots that shows the distribution of `Ozone` in each month. 
+Use different colors for each month.
+```{r}
+Month = c(5,6,7,8,9)
+dfOzone <- data.frame(Month, aggregate(Ozone~Month, airquality, summary, na.rm = T)[,2]);dfOzone
+boxplot(Ozone~Month, na.rm = T, airquality, col=c("brown","red","darkolivegreen", "deepskyblue4", "orange"), 
+        xlab="Month Number", ylab="Ozone", main="Ozone in each month")
+```
+
+
+
+##Question 2
+
+Use the following commands to install the `marketing` dataset and load the `datarium` package into your session.
+```{r}
+#install.packages("datarium")
+library(datarium)
+data("marketing", package = "datarium")
+str(marketing)
+attach(marketing)
+```
+
+a)  Find the covariance between the `Sales` and the advertising budget of `newspaper`. Comment on the output, in terms of the strength and direction of the relationship.
+```{r}
+cov(sales, newspaper, use="complete.obs") 
+#covariance can tell us the direction of the relationship. In this case it is a positive linear direction.
+#To find strength of relationship we should see correlation as covariance does not truly provide strength of relationship.
+cor(sales, newspaper, use="complete.obs")
+#with a cor value of 0.228 it can be seen this is a weak positive correlation.
+```
+
+b) Plot the `Sales` as a function of the `Youtube` variable using a scatterplot, then graph the least-square line on the same plot. 
+Hint: You may use the `ggplot()` function from `ggplot2` package. 
+
+```{r}
+salesyoutube <- lm(sales~youtube, marketing);coef(salesyoutube)
+
+plot(youtube, sales)
+abline(coef(salesyoutube))
+
+#install.packages("ggplot2")
+library(ggplot2)
+ggplot(marketing, aes(youtube, sales))+geom_point()+geom_smooth(method = 'lm', se = FALSE)
+```
+
+c) Use the regression line to predict the `Sales` amount when `newspaper` budget is `$136.80K`. Comment on the difference between the output and the expected value. 
+```{r}
+model1 <- lm(sales~newspaper, marketing)
+newsales <- 14.82169 + 0.05469*136.8;newsales
+marketing[which(newspaper == '136.8'),]
+#sale observed output at 136.8 = 15
+#predicted output is 22.3 while observed output is 15, which is not very accurate
+cor(sales, newspaper, use="complete.obs")
+#correlation between sales and newspaper is low and can generally explain why the difference between predicted and observed outcome is different.
+
+```
+
+d) Use `newspaper` and `facebook` variables to build a linear regression model to predict `sales`. Display a summary of your model indicating Residuals, Coefficients, ..., etc. What conclusion can you draw from this summary?
+```{r}
+model2 <- lm(sales~newspaper+facebook, marketing);
+summary(model2)
+summary(model1)#from c)
+#model2 including facebook variable seems to be a more accurate approach at predicting sales. model2 Rsquared value and RSE are higher in model2 than model1, which means model2 is a better fit.
+#In model2, newspaper has a p value > 0.05 indicating it is not statistically significant and we can retain the null hypothesis that the newspaper coefficient = 0 and has no effect. Therefore, newspaper is not a meaningful addition to model2. 
+#Facebook serves as a better predictor of outcome in this model because its p value is statistically significant.
+```
+
+e) Use the regression line to predict the `Sales` amount when `newspaper` budget is `$136.80K` and `facebook` is `$43.92K`.
+```{r}
+nf <- 11.026705 + 0.006644*136.8 + 0.199045*43.92; nf
+```
+
+f) What is the difference between the output in (e) and the output in (c)
+```{r}
+#the output in e) of 20.67 includes two independent variables newspaper + facebook, and is a multiple linear regression analysis. the output in e) is more accurate than c) 22.3 as it is closer to the actual observed output of 15. Facebook has a higher correlation to sales than newspaper to sales, and the inclusion of facebook in the model seems to be meaningful as the output was more accurate.
+```
+
+g) Display the correlation matrix of the variables: `youtube`, `facebook`, `newspaper` and `sales`. What conclusion can you draw?
+```{r}
+cor(marketing, use="complete.obs")
+#sales has the highest positive correlation with youtube, which means youtube has the best return per dollar spent versus the other variables facebook and newspaper. Investing more budget into youtube and less into newspaper may be a smart business decision.
+```
+
+h) In your opinion, which statistical test should be used to discuss the relationship between `youtube` and `sales`?
+Hint:  Review the differnce between Pearson and Spearman tests.
+```{r}
+#Pearson should be used because youtube and sales are both continuous numeric variables
+#Spearman is used to evaluate relationships involving categorical variables
+```
+
+
+##Question 3
+
+Install the `carData` dataset on your computer using the command `install.packages("carData")`. Then load the `CanPop: Canadian Population Data` into your session using the following command.  The CanPop` has 16 rows and 2 columns and represent the decennial time-series of Canadian population between 1851 and 2001.
+```{r}
+#install.packages("carData")
+library("carData")
+data("CanPop", package = "carData")
+str(CanPop)
+attach(CanPop)
+```
+
+a) Which of the two variables is the independent variable and which is the dependent variable? Explain your choice.
+```{r}
+#year is the independent variable, population is the dependent variable
+#typically time-series variables are independent as they cannot change or be influenced by other variables. Population in this case is influenced by year, as every increase in year relates to the increase of population, thus it is the dependent variable.
+```
+
+b) Assuming that year and population are linearly related, give the equation and the graph of the least-squares regression line.
+Hint: use lm() function.
+```{r}
+modelcanPop1 <- lm(population~year, CanPop)
+modelcanPop1
+#y = -337.0986 + 0.1813x
+plot(CanPop)
+abline(coef(modelcanPop1))
+```
+
+c) Explain the meaning of the slope and y-intercept for the least-squares regression line in (b).
+```{r}
+#slope = 0.1813 positive slope. The movement of y per every unit of x. For example, as per this linear model: the population increases by 0.1813 population units or 181300 people per year. 
+#y intercept = -337.0986. y intercept is the starting value when x=0. Y intercept does not represent anything meaningful for this linear model because population cannot be negative. 
+```
+
+d) In year 2020, what would you predict the population's size to be.  Does the value of the predicted size matches your expectations? Explain.
+```{r}
+y = -337.0986 + 0.1813*2020;y
+#predicted pop is 29million, current pop in 2020 is 37million. The predicted and observed outputs do not match because population growth may follow an exponential model thus the data would have to be transformed to better fit a linear model. Including a greater sample area (ie. taking more samples from years <1850) may help develop a better model as well.
+```

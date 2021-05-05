@@ -1,0 +1,227 @@
+---
+title: 'CIND 123 - Data Analytics: Basic Methods'
+author: 
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+<center> <h1> Assignment 2 (10%) </h1> </center>
+<center>  <h3> [Ramello Peralta] </h2> </center>
+<center> <h3> [CIND123 DHD 500519802] </h2> </center>
+---
+## Instructions 
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. Review this website for more details on using R Markdown <http://rmarkdown.rstudio.com>.
+
+Use RStudio for this assignment. Complete the assignment by inserting your R code wherever you see the string "#INSERT YOUR ANSWER HERE".
+
+When you click the **Knit** button, a document (PDF, Word, or HTML format) will be generated that includes both the assignment content as well as the output of any embedded R code chunks.
+
+Submit **both**  the rmd and generated output files. Failing to submit both files will be subject to mark deduction.
+
+
+## Sample Question and Solution
+
+Use `seq()` to create the vector $(1,2,3,\ldots,20)$.
+
+```{r}
+seq(1,20)
+```
+
+******
+\newpage
+## Question 1 
+
+The Titanic Passenger Survival DataSet provides information on the fate of passengers on the fatal maiden voyage of the ocean liner "Titanic." The dataset is available from the Department of Biostatistics at the Vanderbilt University School of Medicine (http://biostat.mc.vanderbilt.edu/wiki/pub/Main/DataSets/titanic3.csv)in several formats. store the Titanic DataSet `titanic_train` using the following commands. 
+```{r}
+library(titanic)
+titanicDataset <- read.csv(file = "http://biostat.mc.vanderbilt.edu/wiki/pub/Main/DataSets/titanic3.csv", stringsAsFactors = F)
+summary(titanicDataset)
+```
+
+a) Extract the columns `sex`, `age`, `cabin` and `survived` into a new data frame of the name 'titanicSubset'.
+
+```{r}
+titanicSubset <- titanicDataset[,c("sex", "age", "cabin", "survived")]
+class(titanicSubset)
+head(titanicSubset)
+```
+
+
+b) Use the aggregate() function to display the total number of survivors grouped by `sex`
+
+```{r}
+# survivors grouped by 'sex'
+survivedsex <- aggregate(survived~sex, titanicSubset, sum, na.rm = T);survivedsex
+library(dplyr)
+count(titanicSubset, titanicSubset$survived) # 1 = true for survived
+```
+
+c) Use the count() function in `dplyr` package to display the total number of passengers within each Ticket Class `Pclass.`
+
+```{r}
+#install.packages("dplyr")
+library(dplyr)
+count(titanicDataset, titanicDataset$pclass)
+count(titanicDataset, is.na(titanicDataset$pclass))
+
+```
+
+d) Answer the following graphically:
+1. What was the survival rates for females and males?
+2. What was the age distribution on the Titanic?
+```{r}
+#1. What was the survival rates for females and males?
+
+nsex <- count(titanicSubset, titanicSubset$sex) #total of both sexes
+survivedsex <- aggregate(survived~sex, titanicSubset, sum, na.rm = T) #survivors grouped by sex
+drf<- c(round(as.numeric(survivedsex[1,2]/nsex[1,2])*100,1),
+        round(as.numeric(survivedsex[2,2]/nsex[2,2])*100,1))#relative frequencies
+srf <- c(100 - as.numeric(drf[1]), 100 - as.numeric(drf[2]))
+dfsurvive <- data.frame(sex = c("Female", "Male"), survivors = survivedsex[,2], n = nsex[,2], rfsurvived = drf, rfdied = srf);dfsurvive
+
+
+Females = c(dfsurvive[1,5], dfsurvive[1,4])
+Males = c(dfsurvive[2,5], dfsurvive[2,4])
+
+colors = c("black", "dodgerblue1")
+par(mfrow=c(1,2))
+pie(Females, labels = Females, col = colors,
+    main = "Survival Rates for Females (%)")
+legend("topleft", legend=c("Died", "Survived"), fill = colors)
+pie(Males, labels = Males, col = colors,
+    main = "Survival Rates for Males (%)")
+legend("topleft", legend=c("Died", "Survived"), fill = colors)
+
+#2. What was the age distribution on the Titanic?
+par(mfrow=c(1,1))
+hist(titanicSubset$age, breaks = 40, ylim = c(0,100), col = "darkslategray4",
+     main = "Age Distribution on the Titanic", xlab = "Age", axes = FALSE)
+axis(side=1, at=seq(0,80, by=5))
+axis(side=2, at=seq(0,100, by=5))
+#count(titanicDataset, is.na(titanicDataset$age))#263 missing ages 
+
+```
+
+e)Use the `for` loop and `if` control statements to list the children's names, aged 14 or under, on the Titanic.
+```{r}
+#INSERT YOUR ANSWER HERE
+name <- c()
+for (n in 1:length(titanicDataset$age)) {
+  if(titanicDataset$age[n] <= 14 & !is.na(titanicDataset$age[n]))
+    {name <- c(name, titanicDataset$name[n])} 
+}
+name
+
+```
+
+
+******
+\newpage
+## Question 2
+
+In an experiment of rolling 10 dice simultaneously. Use the binomial distribution to calculate the followings:
+
+a) The probability of getting six 6's
+```{r}
+dbinom(6, 10, 1/6)
+```
+
+b) The probability of getting six, seven, or eight 3's
+```{r}
+sum(dbinom(6:8, 10, 1/6))
+```
+
+c) The probability of getting six even numbers
+```{r}
+dbinom(6, 10, 0.5)
+```
+
+
+******
+\newpage
+## Question 3 
+
+In a shipment of 20 engines, history shows that the probability of any one engine proving unsatisfactory is 0.1
+
+a) Use the Binomial approximation to calculate the probability that at least three engines are defective? 
+```{r}
+#n = 20, p = 0.1
+sum(dbinom(3:20, 20, 0.1))
+#or
+pbinom(2, 20, 0.1, lower.tail = FALSE)
+```
+
+
+b) Use the Poisson approximation to calculate the probability that at least three engines are defective? 
+```{r}
+#lambda = np = 20 x 0.1 = 2
+ppois(2, 2, lower=FALSE)
+#or
+1-ppois(2,2)
+```
+
+
+c) Compare the results of parts a and b, then illustrate graphically on how well the Poisson probability distribution approximates the Binomial probability distribution.
+```{r}
+ppois(2, 2, lower = FALSE)
+pbinom(2, 20, 0.1, lower.tail = FALSE)
+
+par(mfrow=c(1,2))
+curve(ppois(x,2, lower = FALSE), from=0, to=20)
+curve(pbinom(x, 20, 0.1, lower.tail = FALSE), from=0, to=20)
+
+set.seed(100)
+hist(rpois(100000, 2), freq = F, main = "Poisson", xlab = "x")
+hist(rbinom(100000, 20, 0.1), freq = F, main = "Binomial", xlab = "x")
+#Poisson approximates the binomial distribution well in this example
+```
+
+
+
+******
+\newpage
+## Question 4 
+
+Write a script in R to compute the following probabilities of a normal random variable with mean 16 and variance 9
+
+a) lies between 14.4 and 20.3 (inclusive)
+```{r}
+#P(X = x) = 0 for continuous variables therefore
+#P(14.4 <= x <= 20.3) = P(X < 20.3) - P(X < 14.4) 
+#sd = sqrt(9) = 3
+pn <- function(x, x2, mu, sigma){
+  abs(pnorm(x, mu, sigma) - pnorm(x2, mu, sigma))
+}
+pn(20.3, 14.4, 16, 3)
+
+```
+
+
+b) is greater than 21.8
+```{r}
+#P(X > 21.8)
+pnorm(21.8, 16, 3, lower.tail = FALSE)
+#or
+1-pnorm(21.8, 16, 3)
+```
+
+
+c) is less or equal to 10.5
+```{r}
+#P(X <= 10.5)
+pnorm(10.5, 16, 3)
+```
+
+
+d) is less than 13 or greater than 19
+```{r}
+#P(X<13) or P(X>19)
+1 - pn(13, 19, 16, 3)#from function pn in 4a)
+#or
+pnorm(13,16,3) + pnorm(19, 16, 3, lower.tail = FALSE)
+```
+
+******
+END of Assignment #2.
