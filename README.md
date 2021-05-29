@@ -4,7 +4,6 @@ Coursework in R from CIND123 and CMTH642 courses of Ryerson's Data Analytics cer
 
 CIND110 Assignment 2 
 - SQL Queries on a db server using R (RMySQL)
-- SQL Querying a database in R
 
 CIND110 Assignment 3 
 - NLP in R 
